@@ -1,0 +1,4 @@
+.gemini/
+*.pdf
+Exercise.txt
+test*.php

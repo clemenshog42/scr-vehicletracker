@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8080:80"
+    environment:
+      - DB_HOST=db
+      - DB_NAME=fahrzeugkosten_tracker
+      - DB_USER=scr_user
+      - DB_PASS=scr_pass
+      - BASE_URL=http://localhost:8080
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - db
+
+  db:
+    image: mariadb:10.11
+    environment:
+      - MYSQL_DATABASE=fahrzeugkosten_tracker
+      - MYSQL_USER=scr_user
+      - MYSQL_PASSWORD=scr_pass
+      - MYSQL_ROOT_PASSWORD=root_pass
+    volumes:
+      - ./database.sql:/docker-entrypoint-initdb.d/database.sql
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
