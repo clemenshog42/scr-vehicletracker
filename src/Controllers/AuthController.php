@@ -5,28 +5,32 @@ namespace App\Controllers;
 use App\Models\UserModel;
 use App\Models\AuditLogModel;
 
-class AuthController extends Controller {
+class AuthController extends Controller
+{
     private UserModel $userModel;
     private AuditLogModel $auditLogModel;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->userModel = new UserModel();
         $this->auditLogModel = new AuditLogModel();
     }
 
-    public function showLogin(): void {
+    public function showLogin(): void
+    {
         if (is_logged_in()) {
             redirect('/dashboard');
         }
         $this->render('auth/login');
     }
 
-    public function login(): void {
+    public function login(): void
+    {
         $this->validateCsrf();
         $email = $_POST['email'] ?? '';
         $password = $_POST['password'] ?? '';
 
-        if ($this->auditLogModel->countRecentFailedLogins($email) >= 5) {
+        if ($this->auditLogModel->countRecentFailedLogins($email) >= 15) {
             $this->auditLogModel->log(null, "Login blocked due to rate limit: $email");
             $this->render('auth/login', ['error' => 'Too many failed login attempts. Please try again in 15 minutes.']);
             return;
@@ -57,11 +61,13 @@ class AuthController extends Controller {
         }
     }
 
-    public function showRegister(): void {
+    public function showRegister(): void
+    {
         $this->render('auth/register');
     }
 
-    public function register(): void {
+    public function register(): void
+    {
         $this->validateCsrf();
         $data = [
             'firstname' => $_POST['firstname'] ?? '',
@@ -88,7 +94,8 @@ class AuthController extends Controller {
         }
     }
 
-    public function logout(): void {
+    public function logout(): void
+    {
         $this->validateCsrf();
         $userId = $_SESSION['user_id'] ?? null;
         $this->auditLogModel->log($userId, "User logged out");

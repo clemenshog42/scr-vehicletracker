@@ -7,23 +7,26 @@ use App\Models\VehicleModel;
 use App\Models\CategoryModel;
 use App\Models\AuditLogModel;
 
-class EntryController extends Controller {
+class EntryController extends Controller
+{
     private EntryModel $entryModel;
     private VehicleModel $vehicleModel;
     private CategoryModel $categoryModel;
     private AuditLogModel $auditLogModel;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->entryModel = new EntryModel();
         $this->vehicleModel = new VehicleModel();
         $this->categoryModel = new CategoryModel();
         $this->auditLogModel = new AuditLogModel();
     }
 
-    public function index(): void {
+    public function index(): void
+    {
         $this->requireLogin();
         $userId = $_SESSION['user_id'];
-        
+
         $filters = [
             'vehicle_id' => $_GET['vehicle_id'] ?? null,
             'month' => $_GET['month'] ?? null,
@@ -32,7 +35,7 @@ class EntryController extends Controller {
 
         $entries = $this->entryModel->getAllByUser($userId, $filters);
         $vehicles = $this->vehicleModel->getAllByUser($userId);
-        
+
         $this->render('entries/index', [
             'title' => 'Buchungen',
             'entries' => $entries,
@@ -41,10 +44,11 @@ class EntryController extends Controller {
         ]);
     }
 
-    public function showAdd(): void {
+    public function showAdd(): void
+    {
         $this->requireLogin();
         $userId = $_SESSION['user_id'];
-        
+
         $vehicles = $this->vehicleModel->getAllByUser($userId);
         $categories = $this->categoryModel->getAll();
 
@@ -55,7 +59,8 @@ class EntryController extends Controller {
         ]);
     }
 
-    public function add(): void {
+    public function add(): void
+    {
         $this->requireLogin();
         $this->validateCsrf();
 
@@ -65,14 +70,14 @@ class EntryController extends Controller {
         $priceStr = str_replace(',', '.', $_POST['price_per_liter'] ?? '0');
 
         $data = [
-            'vehicle_id' => (int)($_POST['vehicle_id'] ?? 0),
+            'vehicle_id' => (int) ($_POST['vehicle_id'] ?? 0),
             'date' => $_POST['date'] ?? '',
-            'amount' => (float)$amountStr,
+            'amount' => (float) $amountStr,
             'description' => $_POST['description'] ?? '',
-            'mileage' => (int)($_POST['mileage'] ?? 0),
+            'mileage' => (int) ($_POST['mileage'] ?? 0),
             'is_refuel' => !empty($_POST['is_refuel']),
-            'liters' => (float)$litersStr,
-            'price_per_liter' => (float)$priceStr,
+            'liters' => (float) $litersStr,
+            'price_per_liter' => (float) $priceStr,
             'categories' => isset($_POST['category_id']) ? [$_POST['category_id']] : []
         ];
 
@@ -104,7 +109,8 @@ class EntryController extends Controller {
         }
     }
 
-    private function showError(string $message, array $data): void {
+    private function showError(string $message, array $data): void
+    {
         $userId = $_SESSION['user_id'];
         $this->render('entries/add', [
             'error' => $message,
@@ -114,16 +120,17 @@ class EntryController extends Controller {
         ]);
     }
 
-    public function showEdit(): void {
+    public function showEdit(): void
+    {
         $this->requireLogin();
         $userId = $_SESSION['user_id'];
-        $id = (int)($_GET['id'] ?? 0);
-        
+        $id = (int) ($_GET['id'] ?? 0);
+
         $entry = $this->entryModel->findById($id, $userId);
         if (!$entry) {
             die("Buchung nicht gefunden");
         }
-        
+
         // Fetch categories for this entry
         $entryCategories = $this->entryModel->getCategoriesForEntry($id);
         $entry['categories'] = array_column($entryCategories, 'category_id');
@@ -136,13 +143,14 @@ class EntryController extends Controller {
         ]);
     }
 
-    public function edit(): void {
+    public function edit(): void
+    {
         $this->requireLogin();
         $this->validateCsrf();
 
         $userId = $_SESSION['user_id'];
-        $id = (int)($_POST['id'] ?? 0);
-        
+        $id = (int) ($_POST['id'] ?? 0);
+
         if (!$this->entryModel->findById($id, $userId)) {
             die("Buchung nicht gefunden");
         }
@@ -152,14 +160,14 @@ class EntryController extends Controller {
         $priceStr = str_replace(',', '.', $_POST['price_per_liter'] ?? '0');
 
         $data = [
-            'vehicle_id' => (int)($_POST['vehicle_id'] ?? 0),
+            'vehicle_id' => (int) ($_POST['vehicle_id'] ?? 0),
             'date' => $_POST['date'] ?? '',
-            'amount' => (float)$amountStr,
+            'amount' => (float) $amountStr,
             'description' => $_POST['description'] ?? '',
-            'mileage' => (int)($_POST['mileage'] ?? 0),
+            'mileage' => (int) ($_POST['mileage'] ?? 0),
             'is_refuel' => !empty($_POST['is_refuel']),
-            'liters' => (float)$litersStr,
-            'price_per_liter' => (float)$priceStr,
+            'liters' => (float) $litersStr,
+            'price_per_liter' => (float) $priceStr,
             'categories' => isset($_POST['category_id']) ? [$_POST['category_id']] : []
         ];
 
@@ -194,7 +202,8 @@ class EntryController extends Controller {
         }
     }
 
-    private function showEditError(string $message, array $data): void {
+    private function showEditError(string $message, array $data): void
+    {
         $userId = $_SESSION['user_id'];
         $this->render('entries/edit', [
             'error' => $message,
@@ -204,11 +213,12 @@ class EntryController extends Controller {
         ]);
     }
 
-    public function delete(): void {
+    public function delete(): void
+    {
         $this->requireLogin();
         $this->validateCsrf();
 
-        $id = (int)($_POST['id'] ?? 0);
+        $id = (int) ($_POST['id'] ?? 0);
         if ($this->entryModel->softDelete($id, $_SESSION['user_id'])) {
             $this->auditLogModel->log($_SESSION['user_id'], "Buchung gelöscht (ID: $id)");
             redirect('/entries');

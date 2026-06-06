@@ -5,16 +5,19 @@ namespace App\Controllers;
 use App\Models\VehicleModel;
 use App\Models\AuditLogModel;
 
-class VehicleController extends Controller {
+class VehicleController extends Controller
+{
     private VehicleModel $vehicleModel;
     private AuditLogModel $auditLogModel;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->vehicleModel = new VehicleModel();
         $this->auditLogModel = new AuditLogModel();
     }
 
-    public function index(): void {
+    public function index(): void
+    {
         $this->requireLogin();
         $vehicles = $this->vehicleModel->getAllByUser($_SESSION['user_id']);
         $this->render('vehicles/index', [
@@ -23,12 +26,14 @@ class VehicleController extends Controller {
         ]);
     }
 
-    public function showAdd(): void {
+    public function showAdd(): void
+    {
         $this->requireLogin();
         $this->render('vehicles/add', ['title' => 'Fahrzeug hinzufügen']);
     }
 
-    public function add(): void {
+    public function add(): void
+    {
         $this->requireLogin();
         $this->validateCsrf();
 
@@ -52,11 +57,12 @@ class VehicleController extends Controller {
         }
     }
 
-    public function delete(): void {
+    public function delete(): void
+    {
         $this->requireLogin();
         $this->validateCsrf();
 
-        $id = (int)($_POST['id'] ?? 0);
+        $id = (int) ($_POST['id'] ?? 0);
         if ($this->vehicleModel->softDelete($id, $_SESSION['user_id'])) {
             $this->auditLogModel->log($_SESSION['user_id'], "Fahrzeug gelöscht (ID: $id)");
             redirect('/vehicles');
@@ -65,10 +71,11 @@ class VehicleController extends Controller {
         }
     }
 
-    public function showEdit(): void {
+    public function showEdit(): void
+    {
         $this->requireLogin();
-        $id = (int)($_GET['id'] ?? 0);
-        
+        $id = (int) ($_GET['id'] ?? 0);
+
         $vehicle = $this->vehicleModel->findById($id, $_SESSION['user_id']);
         if (!$vehicle) {
             die("Fahrzeug nicht gefunden");
@@ -77,13 +84,14 @@ class VehicleController extends Controller {
         $this->render('vehicles/edit', ['title' => 'Fahrzeug bearbeiten', 'data' => $vehicle]);
     }
 
-    public function edit(): void {
+    public function edit(): void
+    {
         $this->requireLogin();
         $this->validateCsrf();
 
-        $id = (int)($_POST['id'] ?? 0);
+        $id = (int) ($_POST['id'] ?? 0);
         $userId = $_SESSION['user_id'];
-        
+
         if (!$this->vehicleModel->findById($id, $userId)) {
             die("Fahrzeug nicht gefunden");
         }

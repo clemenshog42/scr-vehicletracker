@@ -4,8 +4,10 @@ namespace App\Models;
 
 use PDO;
 
-class EntryModel extends Model {
-    public function getAllByUser(int $userId, array $filters = []): array {
+class EntryModel extends Model
+{
+    public function getAllByUser(int $userId, array $filters = []): array
+    {
         $sql = "SELECT e.*, v.name as vehicle_name, r.liters, r.price_per_liter, 
                 GROUP_CONCAT(c.name SEPARATOR ', ') as categories
                 FROM cost_entries e
@@ -14,7 +16,7 @@ class EntryModel extends Model {
                 LEFT JOIN entry_category ec ON e.id = ec.entry_id
                 LEFT JOIN categories c ON ec.category_id = c.id
                 WHERE v.user_id = ? AND e.deleted_at IS NULL";
-        
+
         $params = [$userId];
 
         if (!empty($filters['vehicle_id'])) {
@@ -33,13 +35,14 @@ class EntryModel extends Model {
         }
 
         $sql .= " GROUP BY e.id ORDER BY e.date DESC";
-        
+
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll();
     }
 
-    public function create(array $data): bool {
+    public function create(array $data): bool
+    {
         $this->db->beginTransaction();
         try {
             // 1. Insert into cost_entries
@@ -53,7 +56,7 @@ class EntryModel extends Model {
                 $data['description'],
                 $data['mileage']
             ]);
-            $entryId = (int)$this->db->lastInsertId();
+            $entryId = (int) $this->db->lastInsertId();
 
             // 2. If it's a refuel entry, insert into refuel_entries
             if (!empty($data['is_refuel'])) {
@@ -80,7 +83,8 @@ class EntryModel extends Model {
         }
     }
 
-    public function findById(int $id, int $userId): ?array {
+    public function findById(int $id, int $userId): ?array
+    {
         $stmt = $this->db->prepare(
             "SELECT e.*, r.liters, r.price_per_liter 
              FROM cost_entries e
@@ -96,13 +100,15 @@ class EntryModel extends Model {
         return $entry ?: null;
     }
 
-    public function getCategoriesForEntry(int $entryId): array {
+    public function getCategoriesForEntry(int $entryId): array
+    {
         $stmt = $this->db->prepare("SELECT category_id FROM entry_category WHERE entry_id = ?");
         $stmt->execute([$entryId]);
         return $stmt->fetchAll();
     }
 
-    public function update(int $id, array $data): bool {
+    public function update(int $id, array $data): bool
+    {
         $this->db->beginTransaction();
         try {
             $stmt = $this->db->prepare(
@@ -119,7 +125,7 @@ class EntryModel extends Model {
 
             // Delete old refuel entry
             $this->db->prepare("DELETE FROM refuel_entries WHERE entry_id = ?")->execute([$id]);
-            
+
             if (!empty($data['is_refuel'])) {
                 $stmt = $this->db->prepare(
                     "INSERT INTO refuel_entries (entry_id, liters, price_per_liter) VALUES (?, ?, ?)"
@@ -145,7 +151,8 @@ class EntryModel extends Model {
         }
     }
 
-    public function softDelete(int $id, int $userId): bool {
+    public function softDelete(int $id, int $userId): bool
+    {
         // Ensure the entry belongs to a vehicle of the user
         $stmt = $this->db->prepare(
             "UPDATE cost_entries e 
@@ -156,7 +163,8 @@ class EntryModel extends Model {
         return $stmt->execute([$id, $userId]);
     }
 
-    public function getMonthlyStats(int $userId): array {
+    public function getMonthlyStats(int $userId): array
+    {
         $stmt = $this->db->prepare(
             "SELECT v.name as vehicle_name, MONTH(e.date) as month, YEAR(e.date) as year, SUM(e.amount) as total_amount
              FROM cost_entries e
@@ -169,7 +177,8 @@ class EntryModel extends Model {
         return $stmt->fetchAll();
     }
 
-    public function getFuelConsumptionStats(int $userId): array {
+    public function getFuelConsumptionStats(int $userId): array
+    {
         $stmt = $this->db->prepare(
             "SELECT v.name as vehicle_name, 
                     SUM(r.liters) as total_liters,

@@ -5,16 +5,19 @@ namespace App\Controllers;
 use App\Models\UserModel;
 use App\Models\AuditLogModel;
 
-class AdminController extends Controller {
+class AdminController extends Controller
+{
     private UserModel $userModel;
     private AuditLogModel $auditLogModel;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->userModel = new UserModel();
         $this->auditLogModel = new AuditLogModel();
     }
 
-    public function index(): void {
+    public function index(): void
+    {
         $this->requireRole('administrator');
         $users = $this->userModel->getAll();
         $this->render('admin/users', [
@@ -23,14 +26,15 @@ class AdminController extends Controller {
         ]);
     }
 
-    public function updateStatus(): void {
+    public function updateStatus(): void
+    {
         $this->requireRole('administrator');
         $this->validateCsrf();
 
-        $userId = (int)($_POST['user_id'] ?? 0);
+        $userId = (int) ($_POST['user_id'] ?? 0);
         $newStatus = $_POST['status'] ?? '';
 
-        if ($userId === (int)$_SESSION['user_id']) {
+        if ($userId === (int) $_SESSION['user_id']) {
             die("Sie können Ihren eigenen Account nicht deaktivieren.");
         }
 
