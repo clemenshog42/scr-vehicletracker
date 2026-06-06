@@ -32,7 +32,12 @@
                 <ul class="navbar-nav ms-auto">
                     <?php if (is_logged_in()): ?>
                         <li class="nav-item"><span class="nav-link text-light">Hallo, <?= e($_SESSION['user_name']) ?></span></li>
-                        <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
+                        <li class="nav-item">
+                            <form action="/logout" method="POST" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                                <button type="submit" class="btn nav-link border-0 bg-transparent">Logout</button>
+                            </form>
+                        </li>
                     <?php else: ?>
                         <li class="nav-item"><a class="nav-link <?= $currentPath === '/login' ? 'active' : '' ?>" href="/login">Login</a></li>
                         <li class="nav-item"><a class="nav-link <?= $currentPath === '/register' ? 'active' : '' ?>" href="/register">Registrieren</a></li>

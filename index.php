@@ -7,6 +7,14 @@ session_start([
     'cookie_samesite' => 'Strict',
 ]);
 
+set_exception_handler(function ($e) {
+    error_log((string)$e);
+    http_response_code(500);
+    echo "<h1>500 Internal Server Error</h1>";
+    echo "<p>Something went wrong. Please try again later.</p>";
+    exit;
+});
+
 // Simple PSR-4 Autoloader
 spl_autoload_register(function ($class) {
     $prefix = 'App\\';
@@ -36,7 +44,6 @@ $routes = [
         '/' => ['HomeController', 'index'],
         '/login' => ['AuthController', 'showLogin'],
         '/register' => ['AuthController', 'showRegister'],
-        '/logout' => ['AuthController', 'logout'],
         '/dashboard' => ['DashboardController', 'index'],
         '/vehicles' => ['VehicleController', 'index'],
         '/vehicles/add' => ['VehicleController', 'showAdd'],
@@ -49,6 +56,7 @@ $routes = [
     'POST' => [
         '/login' => ['AuthController', 'login'],
         '/register' => ['AuthController', 'register'],
+        '/logout' => ['AuthController', 'logout'],
         '/vehicles/add' => ['VehicleController', 'add'],
         '/vehicles/edit' => ['VehicleController', 'edit'],
         '/vehicles/delete' => ['VehicleController', 'delete'],

@@ -17,4 +17,16 @@ class AuditLogModel extends Model {
         );
         return $stmt->fetchAll();
     }
+
+    public function countRecentFailedLogins(string $email, int $minutes = 15): int {
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+        $actionPattern = "Failed login attempt (Invalid credentials) for email: $email";
+        $stmt = $this->db->prepare(
+            "SELECT COUNT(*) FROM audit_logs 
+             WHERE (action = ? OR ip_address = ?) 
+             AND timestamp >= NOW() - INTERVAL ? MINUTE"
+        );
+        $stmt->execute([$actionPattern, $ip, $minutes]);
+        return (int)$stmt->fetchColumn();
+    }
 }

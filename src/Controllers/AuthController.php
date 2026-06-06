@@ -26,6 +26,12 @@ class AuthController extends Controller {
         $email = $_POST['email'] ?? '';
         $password = $_POST['password'] ?? '';
 
+        if ($this->auditLogModel->countRecentFailedLogins($email) >= 5) {
+            $this->auditLogModel->log(null, "Login blocked due to rate limit: $email");
+            $this->render('auth/login', ['error' => 'Too many failed login attempts. Please try again in 15 minutes.']);
+            return;
+        }
+
         $user = $this->userModel->findByEmail($email);
 
         if ($user && password_verify($password, $user['password_hash'])) {
@@ -35,6 +41,9 @@ class AuthController extends Controller {
                 return;
             }
 
+            // Regenerate session ID to prevent session fixation
+            session_regenerate_id(true);
+
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['user_email'] = $user['email'];
             $_SESSION['user_role'] = $user['role'];
@@ -43,7 +52,7 @@ class AuthController extends Controller {
             $this->auditLogModel->log($user['id'], "User logged in");
             redirect('/dashboard');
         } else {
-            $this->auditLogModel->log(null, "Failed login attempt for email: $email");
+            $this->auditLogModel->log(null, "Failed login attempt (Invalid credentials) for email: $email");
             $this->render('auth/login', ['error' => 'Invalid email or password']);
         }
     }
@@ -61,7 +70,6 @@ class AuthController extends Controller {
             'password' => $_POST['password'] ?? '',
         ];
 
-        // Basic validation
         if (empty($data['firstname']) || empty($data['lastname']) || empty($data['email']) || empty($data['password'])) {
             $this->render('auth/register', ['error' => 'All fields are required']);
             return;
@@ -81,6 +89,7 @@ class AuthController extends Controller {
     }
 
     public function logout(): void {
+        $this->validateCsrf();
         $userId = $_SESSION['user_id'] ?? null;
         $this->auditLogModel->log($userId, "User logged out");
         session_destroy();
