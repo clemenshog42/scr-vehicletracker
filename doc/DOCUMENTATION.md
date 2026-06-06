@@ -1,12 +1,5 @@
-# Systemarchitektur & Sicherheitskonzept: Fahrzeugkosten-Tracker
-
-Dieses Dokument beschreibt die Softwarearchitektur, die implementierten Sicherheitsmaßnahmen sowie das Datenbankschema der Anwendung „Fahrzeugkosten-Tracker“. Die Architektur folgt modernen Best Practices der Webentwicklung, um eine hohe Wartbarkeit, Skalierbarkeit und Robustheit gegen gängige Angriffsvektoren zu gewährleisten.
-
----
-
 ## 1. Architekturübersicht
-
-Die Anwendung basiert auf dem klassischen **Model-View-Controller (MVC)** Architekturmuster. Dieses trennt die Geschäftslogik, die Datenverwaltung und die Benutzeroberfläche strikt voneinander.
+Die Anwendung basiert auf dem klassischen **Model-View-Controller (MVC)** Architekturmuster.
 
 ### 1.1 Front Controller (`index.php`)
 Der Front Controller bildet den zentralen Einstiegspunkt (Single Point of Entry) für alle eingehenden HTTP-Anfragen.
